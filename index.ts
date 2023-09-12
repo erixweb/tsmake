@@ -2,8 +2,13 @@ import { variables } from "./keywords/variables.ts"
 import { isAlpha } from "./utils/alpha.ts"
 
 const contents = Deno.readTextFileSync("repl/index.ts").split("")
+
 const output: string[] = []
-Deno.writeFileSync("mem.json", new TextEncoder().encode(""))
+const debugMemory = false
+
+if (debugMemory) {
+	Deno.writeFileSync("mem.json", new TextEncoder().encode(""))
+}
 
 while (contents.length > 0) {
 	const memUsage = Deno.memoryUsage()
@@ -15,7 +20,10 @@ while (contents.length > 0) {
 		)
 		Deno.exit()
 	} else if (memUsage.heapUsed > (95 / 100) * memUsage.heapTotal) {
-		console.warn(`%cProgram is using above 95% of the total heap. (${memUsage.heapUsed}/${memUsage.heapTotal})`, "color: yellow;")
+		console.warn(
+			`%cProgram is using above 95% of the total heap. (${memUsage.heapUsed}/${memUsage.heapTotal})`,
+			"color: yellow;"
+		)
 	}
 	if (contents[0] === '"' || contents[0] === "'") {
 		let string: string
