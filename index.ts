@@ -9,24 +9,27 @@ while (contents.length > 0) {
 	const memUsage = Deno.memoryUsage()
 
 	if (memUsage.heapUsed > memUsage.heapTotal) {
-		console.error("%cMemory used exceeds avalible memory.", "color: #fff; background-color: red;")
+		console.error(
+			"%cMemory used exceeds avalible memory.",
+			"color: #fff; background-color: red;"
+		)
 		Deno.exit()
-	} else if (memUsage.heapUsed > 30 / 100 * memUsage.heapTotal) {
-		console.warn("%cProgram is using above 30% of the total heap.")
+	} else if (memUsage.heapUsed > (95 / 100) * memUsage.heapTotal) {
+		console.warn(`%cProgram is using above 95% of the total heap. (${memUsage.heapUsed}/${memUsage.heapTotal})`, "color: yellow;")
 	}
 	if (contents[0] === '"' || contents[0] === "'") {
-		let string: string | any
-		console.log(contents[0])
+		let string: string
+		string = ""
 		contents.shift()
-
 		while (contents[0] !== '"' && contents[0] !== "'") {
-			string += contents.shift() 
-			console.log(string)
+			if (contents[0] !== undefined) {
+				string += contents.shift()
+			} else {
+				contents.shift()
+			}
 		}
 
-
 		output.push(`"${string}`)
-		console.log(string)
 	} else if (isAlpha(contents[0])) {
 		let keyword = ""
 		while (isAlpha(contents[0])) {

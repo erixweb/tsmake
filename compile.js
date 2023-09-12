@@ -1,4 +1,4 @@
-let name = "undefinedErik"
+let name = "Erik"
 
 console.log(name)
 
@@ -13,4 +13,4 @@ function say(message) {
     console.log(message)
 }
 
-say("undefinedEnums enum e { e }")
+say("Enums enum e { e }")
