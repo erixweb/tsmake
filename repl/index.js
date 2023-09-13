@@ -1,11 +1,9 @@
-import { 
-    Person
-} 
-from
-"../types.d.ts"
-import { hello } from "repl/say.ts"
 
-const erik: Person = {
+export function hello(msg) {
+    console.log(msg)
+}import  { hello } from "repl/say.js"
+
+const erik = {
 	twitter: {
 		name: "Erik",
 		created: "2022",
@@ -14,11 +12,12 @@ const erik: Person = {
 
 console.log(erik.twitter.created)
 
-enum e {
-	hello,
-	xd,
-	lmao = "LMAO",
-}
+const e = {
+				"hello": 0,
+"xd": 1,
+"lmao": "LMAO",
+
+			}
 
 // what is this
 console.log(e.hello)
