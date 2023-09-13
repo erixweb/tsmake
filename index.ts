@@ -37,7 +37,7 @@ while (contents.length > 0) {
 			}
 		}
 
-		output.push(`"${string}`)
+		output.push(`${contents[0]}${string}`)
 	} else if (isAlpha(contents[0])) {
 		let keyword = ""
 		while (isAlpha(contents[0])) {
@@ -57,7 +57,7 @@ while (contents.length > 0) {
 			while (contents[0] !== "}") {
 				if (isAlpha(contents[0])) {
 					let keyword = ""
-					while (contents[0] !== "\n") {
+					while (contents[0] !== "\n" && contents[0] !== ",") {
 						if (
 							contents[0] === "{" ||
 							contents[0] === "}" ||
@@ -84,12 +84,50 @@ while (contents.length > 0) {
 
 							const value = element.substring(element.indexOf("=") + 1)
 
-							return `"${name}": ${value}`
+							return `"${name}": ${value},\n`
 						}
-						return `"${element}": ${index}`
+						return `"${element}": ${index},\n`
 					})
 					.join("")}
 			`)
+		} else if (keyword === "type" || keyword === "interface") {
+			let stop = false
+			let currentBracket = 0
+			while (!stop) {
+				if (contents[0] === "{") {
+					currentBracket++
+				} else if (contents[0] === "}") {
+					currentBracket--
+					if (currentBracket === 0) stop = true
+				}
+
+				contents.shift()
+			}
+		} else if (keyword === "import") {
+			let path = "", importName = ""
+			let semicolons = 0
+
+			while (semicolons < 2) {
+				if (contents[0] === "'" || contents[0] === '"') {
+					const semicolonType = contents[0]
+					contents.shift()
+
+					while (contents[0] !== semicolonType) {
+						path += contents.shift()
+						
+						semicolons++
+					}
+					importName += semicolonType+path
+					importName += contents.shift()
+				} else {
+					importName += contents.shift()
+				}
+			}
+			if (!path.endsWith(".d.ts")) {
+				output.push("import "+importName)
+			}
+
+			
 		} else {
 			output.push(keyword)
 		}
