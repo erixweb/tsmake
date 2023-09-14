@@ -1,9 +1,5 @@
-import { 
-    Person
-} 
-from
-"../types.d.ts"
-import { hello } from "repl/say.ts"
+import { Person } from "../types.d.ts";
+import { hello } from "./say.ts"
 
 const erik: Person = {
 	twitter: {

@@ -1,7 +1,5 @@
-
-export function hello(msg) {
-    console.log(msg)
-}import  { hello } from "repl/say.js"
+;
+import  { hello } from "./say.ts"
 
 const erik = {
 	twitter: {

@@ -1,14 +1,14 @@
 import { variables } from "./keywords/variables.ts"
 import { isAlpha } from "./utils/alpha.ts"
 
-const output: string[] = []
 const debugMemory = false
 
 if (debugMemory) {
 	Deno.writeFileSync("mem.json", new TextEncoder().encode(""))
 }
 
-function compile(filePath: string, run = false) {
+async function compile(filePath: string, run = false, origin="") {
+	const output: string[] = []
 	const contents = Deno.readTextFileSync(filePath).split("")
 	while (contents.length > 0) {
 		const memUsage = Deno.memoryUsage()
@@ -127,8 +127,14 @@ function compile(filePath: string, run = false) {
 				if (path.endsWith(".js")) {
 					output.push("import " + importName)
 				} else if (path.endsWith(".ts") && !path.endsWith(".d.ts")) {
-					compile(path)
-					output.push("import " + importName.replace(".ts", ".js"))
+					let reverseImport = filePath.replace(".ts", ".js").split("").reverse().join("")
+					const fileIndex = reverseImport.indexOf("/")
+					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
+					compile(reverseImport+path, false)
+				
+
+
+					output.push("import " + `${importName}`)
 				}
 			} else {
 				output.push(keyword)
@@ -142,7 +148,9 @@ function compile(filePath: string, run = false) {
 		new TextEncoder().encode(output.join(""))
 	)
 	if (run) {
-		eval(output.join(""))
+		let cmd = new Deno.Command("deno", { args: ["run", "repl/index.js"]})
+		let { code, stdout, stderr } = await cmd.output()
+		console.log(new TextDecoder().decode(stdout))
 	}
 }
 compile("repl/index.ts", true)
