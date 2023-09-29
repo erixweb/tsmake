@@ -7,7 +7,7 @@ if (debugMemory) {
 	Deno.writeFileSync("mem.json", new TextEncoder().encode(""))
 }
 
-async function compile(filePath: string, run = false, origin="") {
+async function compile(filePath: string, run = false, origin = "") {
 	const output: string[] = []
 	const contents = Deno.readTextFileSync(filePath).split("")
 	while (contents.length > 0) {
@@ -130,11 +130,21 @@ async function compile(filePath: string, run = false, origin="") {
 					let reverseImport = filePath.replace(".ts", ".js").split("").reverse().join("")
 					const fileIndex = reverseImport.indexOf("/")
 					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
-					compile(reverseImport+path, false)
-				
-
+					compile(reverseImport + path, false)
 
 					output.push("import " + `${importName}`)
+				}
+			} else if (keyword === "function") {
+				output.push(keyword)
+				while (contents[0] !== "{") {
+					if (contents[0] === ":") {
+						contents.shift()
+						while (contents[0] !== ")" && contents[0] !== ",") {
+							contents.shift()
+						}
+					} else {
+						output.push(contents.shift()!)
+					}
 				}
 			} else {
 				output.push(keyword)
@@ -148,7 +158,7 @@ async function compile(filePath: string, run = false, origin="") {
 		new TextEncoder().encode(output.join(""))
 	)
 	if (run) {
-		let cmd = new Deno.Command("deno", { args: ["run", "repl/index.js"]})
+		let cmd = new Deno.Command("deno", { args: ["run", "repl/index.js"] })
 		let { code, stdout, stderr } = await cmd.output()
 		console.log(new TextDecoder().decode(stdout))
 	}
