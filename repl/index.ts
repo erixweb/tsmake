@@ -1,7 +1,7 @@
 import { Person } from "../types.d.ts"
 import { hello } from "./say.ts"
 
-const erik: Person = {
+const erik = <Person>{
 	twitter: {
 		name: "Erik",
 		created: "2022",
@@ -19,9 +19,10 @@ enum e {
 // what is this
 console.log(e.hello)
 
-function say(message: any, dos: number) {
+function say(message: any, dos: number): void {
 	console.log(message)
 }
 
 say("Enums enum e { e }")
 hello("doso")
+

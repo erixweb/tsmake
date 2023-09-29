@@ -20,9 +20,10 @@ const e = {
 // what is this
 console.log(e.hello)
 
-function say(message, dos) {
+function say(message, dos){
 	console.log(message)
 }
 
 say("Enums enum e { e }")
 hello("doso")
+

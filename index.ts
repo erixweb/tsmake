@@ -38,6 +38,24 @@ async function compile(filePath: string, run = false, origin = "") {
 			}
 
 			output.push(`${contents[0]}${string}`)
+		} else if (contents[0] === "<") {
+			let stop = false
+			
+			let content = ""
+			contents[0] = "<"
+			content = contents.shift()!
+
+			while (!stop) {
+				if (contents[0] === ")" || contents[0] === ";" || contents[0] === "|" || contents[0] === "&") { 
+					stop = true
+					output.push(content)
+				} else if (contents[0] === ">") {
+					contents.shift()
+					stop = true
+				} else {
+					content += contents.shift()
+				}
+			}
 		} else if (isAlpha(contents[0])) {
 			let keyword = ""
 			while (isAlpha(contents[0])) {
@@ -139,7 +157,7 @@ async function compile(filePath: string, run = false, origin = "") {
 				while (contents[0] !== "{") {
 					if (contents[0] === ":") {
 						contents.shift()
-						while (contents[0] !== ")" && contents[0] !== ",") {
+						while (contents[0] !== ")" && contents[0] !== "," && contents[0] !== "{") {
 							contents.shift()
 						}
 					} else {
