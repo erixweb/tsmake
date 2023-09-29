@@ -1,9 +1,5 @@
 # TSMake
 
-Fast TypeScript `parser` made with Deno
+Interpretador de TypeScript ràpid. Converteix els codi de TypeScript en JavaScript i a més, rastrea els imports i els compila.
 
-## Not implemented yet
-
-> Typed functions
-> Custom types
-> Interfaces
+El compilador està en fase beta i no es recomenable utilitzar-ho fins a una versió estable.
