@@ -4,7 +4,7 @@ import { hello } from "./say.ts"
 const erik = <Person>{
 	twitter: {
 		name: "Erik",
-		created: "2022",
+		created: "'2022'",
 	},
 }
 
@@ -16,13 +16,14 @@ enum e {
 	lmao = "LMAO",
 }
 
-// what is this
+// what's this xd' 
+// e
 console.log(e.hello)
 
-function say(message: any, dos: number): void {
-	console.log(message)
+function say(message: any, dos: boolean): void {
+	console.log(message, !dos)!
 }
 
-say("Enums enum e { e }")
+say("Enums enum e { e }", false)
 hello("doso")
 

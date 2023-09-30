@@ -4,7 +4,7 @@ import  { hello } from "./say.ts"
 const erik = {
 	twitter: {
 		name: "Erik",
-		created: "2022",
+		created: "'2022'",
 	},
 }
 
@@ -17,13 +17,14 @@ const e = {
 
 			}
 
-// what is this
+
+
 console.log(e.hello)
 
 function say(message, dos){
-	console.log(message)
+	console.log(message, !dos)
 }
 
-say("Enums enum e { e }")
+say("Enums enum e { e }", false)
 hello("doso")
 
