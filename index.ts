@@ -1,3 +1,4 @@
+// @ts-nocheck	
 import { variables } from "./keywords/variables.ts"
 import { isAlpha } from "./utils/alpha.ts"
 
@@ -5,6 +6,10 @@ const debugMemory = false
 
 if (debugMemory) {
 	Deno.writeFileSync("mem.json", new TextEncoder().encode(""))
+}
+if (Deno.args.length < 1) {
+	console.error("%c❌ Si us plau has de posar el nom d'un arxiu com a argument", "color: red")
+	Deno.exit()
 }
 
 async function compile(filePath: string, run = false, origin = "") {
@@ -221,4 +226,4 @@ async function compile(filePath: string, run = false, origin = "") {
 		console.log(new TextDecoder().decode(stdout))
 	}
 }
-compile("repl/index.ts", true)
+compile(Deno.args[0], true)

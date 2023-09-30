@@ -17,7 +17,7 @@ const e = {
 
 			}
 
-
+r
 
 console.log(e.hello)
 

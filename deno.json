@@ -1,5 +1,6 @@
 {
     "tasks": {
-        "dev": "deno run --allow-all --watch=repl/index.ts index.ts"
+        "dev": "deno run --allow-all --watch=repl/index.ts index.ts",
+        "build": "deno compile --allow-read --allow-write --allow-run index.ts"
     }
 }
