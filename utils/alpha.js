@@ -1,3 +1,3 @@
-export const isAlpha = function (a: string) {
+export const isAlpha = function (a) {
 	return a.toLowerCase() !== a.toUpperCase()
 }

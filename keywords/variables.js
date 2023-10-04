@@ -1,4 +1,4 @@
-export const variables = function (str: string) {
+export const variables = function (str) {
     const typeIndex = str.indexOf(":")
 
     if (typeIndex === -1) return str

@@ -1,6 +1,6 @@
-// @ts-nocheck	
-import { variables } from "./keywords/variables.ts"
-import { isAlpha } from "./utils/alpha.ts"
+
+import  { variables } from "./keywords/variables.ts"
+import  { isAlpha } from "./utils/alpha.ts"
 
 const debugMemory = false
 
@@ -16,8 +16,8 @@ if (typeof Deno.args === "undefined" || Deno.args.length < 1) {
 	console.log(process.argv)
 }
 
-async function compile(filePath: string, run = false, origin = "") {
-	const output: string[] = []
+async function compile(filePath, run = false, origin = "") {
+	const output = []
 	const contents = Deno.readTextFileSync(filePath).split("")
 	while (contents.length > 0) {
 		const memUsage = Deno.memoryUsage()
@@ -28,17 +28,16 @@ async function compile(filePath: string, run = false, origin = "") {
 				"color: #fff; background-color: red;"
 			)
 			Deno.exit()
-		} else if (memUsage.heapUsed > (95 / 100) * memUsage.heapTotal) {
+		} else if (memUsage.heapUsed > (95  100) * memUsage.heapTotal) {
 			console.warn(
-				`%cProgram is using above 95% of the total heap. (${memUsage.heapUsed}/${memUsage.heapTotal})`,
+				`%cProgram is using above 95% of the total heap. (${memUsage.heapUsed}${memUsage.heapTotal})`,
 				"color: yellow;"
 			)
 		}
 
-		// Transpiler
+		
 		if (contents[0] === '"' || contents[0] === "'") {
-			let string: string
-			string = ""
+			let string = ""
 			let endOfString
 			if (contents[0] === '"') endOfString = '"'
 			if (contents[0] === "'") endOfString = "'"
@@ -62,7 +61,7 @@ async function compile(filePath: string, run = false, origin = "") {
 
 			let content = ""
 			contents[0] = "<"
-			content = contents.shift()!
+			content = contents.shift()
 
 			while (!stop) {
 				if (
@@ -117,7 +116,7 @@ async function compile(filePath: string, run = false, origin = "") {
 					variable += contents.shift()
 				}
 
-				output.push(variables(`${keyword}${variable}`)!)
+				output.push(variables(`${keyword}${variable}`))
 			} else if (keyword === "enum") {
 				let enums = []
 
@@ -210,7 +209,7 @@ async function compile(filePath: string, run = false, origin = "") {
 							contents.shift()
 						}
 					} else {
-						output.push(contents.shift()!)
+						output.push(contents.shift())
 					}
 				}
 			} else {
