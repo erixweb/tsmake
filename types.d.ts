@@ -1,6 +1,1 @@
-export type Person = {
-	twitter: {
-		name: string
-		created: string
-	}
-}
+export type Runtime = "node" | "deno" 

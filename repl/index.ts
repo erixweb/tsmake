@@ -1,4 +1,4 @@
-import { Person } from "../types.d.ts"
+import { Person } from "./types.d.ts"
 import { hello } from "./say.ts"
 
 const erik = <Person>{

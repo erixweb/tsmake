@@ -1,28 +1,15 @@
 
+
 import  { variables } from './keywords/variables.mjs'
 import  { isAlpha } from './utils/alpha.mjs'
+import  { writeFileSync, readFileSync } from "node:fs"
+import  { exec } from "node:child_process"
 
-export async function compile(filePath, run = false, origin = "") {
+
+export async function compile(filePath, run = false, runtime) {
 	const output = []
-	const contents = Deno.readTextFileSync(filePath).split("")
+	const contents = readFileSync(filePath, { encoding: "utf-8" }).split("")
 	while (contents.length > 0) {
-		if (typeof Deno !== "undefined") {
-			const memUsage = Deno.memoryUsage()
-
-			if (memUsage.heapUsed > memUsage.heapTotal) {
-				console.error(
-					"%cMemory used exceeds avalible memory.",
-					"color: #fff; background-color: red;"
-				)
-				Deno.exit()
-			} else if (memUsage.heapUsed > (95 / 100) * memUsage.heapTotal) {
-				console.warn(
-					`%cProgram is using above 95% of the total heap. (${memUsage.heapUsed}/${memUsage.heapTotal})`,
-					"color: yellow;"
-				)
-			}
-		}
-
 		
 		if (contents[0] === '"' || contents[0] === "'") {
 			let string = ""
@@ -186,7 +173,7 @@ export async function compile(filePath, run = false, origin = "") {
 					let reverseImport = filePath.replace(".ts", ".js").split("").reverse().join("")
 					const fileIndex = reverseImport.indexOf("/")
 					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
-					compile(reverseImport + path, false)
+					compile(reverseImport + path, false, runtime)
 					let jsPath = path.substring(-1, path.length - 2) + "mjs"
 
 					let item
@@ -196,6 +183,9 @@ export async function compile(filePath, run = false, origin = "") {
 						item = importName.substring(importName.indexOf("'"), -1)
 					}
 					output.push("import " + `${item}'${jsPath}'`)
+				} else if (path.endsWith(".d.ts")) {
+				} else {
+					output.push("import " + importName)
 				}
 			} else if (keyword === "function") {
 				output.push(keyword)
@@ -216,13 +206,18 @@ export async function compile(filePath, run = false, origin = "") {
 
 		output.push(`${contents.shift()}`)
 	}
-	Deno.writeFileSync(
-		`${filePath.replace(".ts", ".mjs")}`,
-		new TextEncoder().encode(output.join(""))
-	)
+	writeFileSync(`${filePath.replace(".ts", ".mjs")}`, new TextEncoder().encode(output.join("")))
 	if (run) {
-		let cmd = new Deno.Command("deno", { args: ["run", "repl/index.js"] })
-		let { code, stdout, stderr } = await cmd.output()
-		console.log(new TextDecoder().decode(stdout))
+		let jsPath = filePath.substring(filePath.lastIndexOf("."), -1) + ".mjs"
+		console.log(jsPath)
+		if (runtime === "deno") {
+			let cmd = new Deno.Command("deno", { args: ["run", jsPath] })
+			let { code, stdout, stderr } = await cmd.output()
+			console.log(new TextDecoder().decode(stdout))
+		} else if (runtime === "node") {
+			let cmd = exec(`node ${jsPath}`, (err, stdout) => {
+				console.log(stdout)
+			})
+		}
 	}
 }
