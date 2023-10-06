@@ -23,6 +23,8 @@ if (args.length < 1) {
 }
 joinedArgs = args?.join(" ")
 fileName = args[0]
+runtime = joinedArgs?.includes("--deno") ? "deno" : joinedArgs.includes("--node") ? "node" : runtime
+
 execute = joinedArgs?.includes("--exe")
 
 compile(fileName, execute, runtime)

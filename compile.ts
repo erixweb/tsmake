@@ -175,7 +175,7 @@ export async function compile(filePath: string, run = false, runtime: Runtime = 
 					const fileIndex = reverseImport.indexOf("/")
 					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
 					compile(reverseImport + path, false, runtime)
-					let jsPath = path.substring(-1, path.length - 2) + "mjs"
+					let jsPath = path.substring(-1, path.length - 2) + "js"
 
 					let item
 					if (importName.indexOf('"') > -1 && importName.lastIndexOf('"') > -1) {
@@ -188,6 +188,33 @@ export async function compile(filePath: string, run = false, runtime: Runtime = 
 				} else {
 					output.push("import " + importName)
 				}
+			} else if (keyword === "require") {
+				let require: string
+				while (contents[0] !== ")") {
+					require += contents.shift()
+				}
+				let stringtype
+				if (require.indexOf('"') !== -1) {
+					stringtype = '"'
+				} else if (require.indexOf("'") !== -1) {
+					stringtype = "'"
+				} else {
+					stringtype = "`"
+				}
+				let path = require.substring(
+					require.indexOf(stringtype) + 1,
+					require.lastIndexOf(stringtype)
+				)
+
+				if (path.endsWith(".ts")) {
+					let reverseImport = filePath.replace(".ts", ".js").split("").reverse().join("")
+					const fileIndex = reverseImport.indexOf("/")
+					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
+					compile(reverseImport + path, false, runtime)
+					path = path.substring(-1, path.length - 2) + "js"
+				}
+
+				output.push(`require("${path}"`)
 			} else if (keyword === "function") {
 				output.push(keyword)
 				while (contents[0] !== "{") {
@@ -207,16 +234,22 @@ export async function compile(filePath: string, run = false, runtime: Runtime = 
 
 		output.push(`${contents.shift()}`)
 	}
-	writeFileSync(`${filePath.replace(".ts", ".mjs")}`, new TextEncoder().encode(output.join("")))
+	writeFileSync(`${filePath.replace(".ts", ".js")}`, new TextEncoder().encode(output.join("")))
 	if (run) {
-		let jsPath = filePath.substring(filePath.lastIndexOf("."), -1) + ".mjs"
+		let jsPath = filePath.substring(filePath.lastIndexOf("."), -1) + ".js"
 		if (runtime === "deno") {
-			let cmd = new Deno.Command("deno", { args: ["run", jsPath] })
+			let cmd = new Deno.Command("deno", { args: ["run", "--allow-all", jsPath] })
 			let { code, stdout, stderr } = await cmd.output()
 			console.log(new TextDecoder().decode(stdout))
+			if (stderr) {
+				console.log(new TextDecoder().decode(stderr))
+			}
 		} else if (runtime === "node") {
 			let cmd = exec(`node ${jsPath}`, (err, stdout) => {
 				console.log(stdout)
+				if (err) {
+					console.log(err)
+				}
 			})
 		}
 	}

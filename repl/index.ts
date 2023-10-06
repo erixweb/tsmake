@@ -1,13 +1,12 @@
 import { Person } from "./types.d.ts"
-import { hello } from "./say.ts"
 
+const hello = require("./say.ts")
 const erik = <Person>{
 	twitter: {
 		name: "Erik",
 		created: "'2022'",
 	},
 }
-
 console.log(erik.twitter.name)
 
 enum e {
