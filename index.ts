@@ -35,6 +35,7 @@ if (joinedArgs?.includes("--dir")) {
 	for (const file of fileList) {
 		let initial = performance.now()
 		compile(file, false, "node")
+		
 		console.log(`%c✅ Compiled ${file} in ${performance.now() - initial}ms`, "color: yellow")
 	}
 } else {

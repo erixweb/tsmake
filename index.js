@@ -35,9 +35,15 @@ if (joinedArgs?.includes("--dir")) {
 	for (const file of fileList) {
 		let initial = performance.now()
 		compile(file, false, "node")
+		
 		console.log(`%c✅ Compiled ${file} in ${performance.now() - initial}ms`, "color: yellow")
 	}
 } else {
+	console.log("%c  TSMake  ", "color: #f0f0f0; background-color: blue;")
+	console.log("")
+	let initial = performance.now()
 	compile(fileName, execute, runtime)
+	console.log(`%c✅ Compiled ${fileName} in ${performance.now() - initial}ms`, "color: yellow")
+
 }
 

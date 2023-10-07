@@ -206,7 +206,7 @@ export async function compile(filePath, run = false, runtime) {
 				}
 
 			} else if (keyword === "require") {
-				let requires 
+				let requires
 				let stringtype
 				while (contents[0] !== ")") {
 					requires += contents.shift()
