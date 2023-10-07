@@ -5,19 +5,29 @@ import  { isAlpha } from './utils/alpha.js'
 import  { writeFileSync, readFileSync } from "node:fs"
 import  { exec } from "node:child_process"
 
+import  { chalk } from './utils/colors.js'
 
-export async function compile(filePath, run = false, runtime) {
+export async function compile(
+	filePath,
+	run = false,
+	runtime,
+	debug = false
+) {
 	const output = []
 	const contents = readFileSync(filePath, { encoding: "utf-8" }).split("")
 	let mustCompile = true
 	if (filePath.endsWith(".js")) mustCompile = false
 	while (contents.length > 0 && mustCompile) {
+		if (debug) {
+			console.log(chalk(`&e------------\n&9Memory&f: ${Deno.memoryUsage().rss / 1024 / 1024}MB\n&9Time&f: ${performance.now()}\n&e------------`))
+		}
+
 		
 		if (contents[0] === '"' || contents[0] === "'" || contents[0] === "`") {
 			let string 
 			string = ""
 			let endOfString
-			endOfString = contents[0] 
+			endOfString = contents[0]
 			contents.shift()
 			while (contents[0] !== endOfString) {
 				if (contents[0] !== undefined) {
@@ -189,8 +199,8 @@ export async function compile(filePath, run = false, runtime) {
 					const fileIndex = reverseImport.indexOf("/")
 					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
 					
-					compile(reverseImport+path, false, runtime)
-					
+					compile(reverseImport + path, false, runtime)
+
 					let jsPath = path.substring(-1, path.length - 2) + "js"
 
 					let item
@@ -204,7 +214,6 @@ export async function compile(filePath, run = false, runtime) {
 				} else {
 					output.push("import " + importName)
 				}
-
 			} else if (keyword === "require") {
 				let requires
 				let stringtype
@@ -252,10 +261,7 @@ export async function compile(filePath, run = false, runtime) {
 		output.push(`${contents.shift()}`)
 	}
 	if (mustCompile) {
-		writeFileSync(
-			`debug.txt`,
-			new TextEncoder().encode(output)
-		)
+		writeFileSync(`debug.txt`, new TextEncoder().encode(output))
 		writeFileSync(
 			`${filePath.replace(".ts", ".js")}`,
 			new TextEncoder().encode(output.join(""))

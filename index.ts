@@ -7,8 +7,8 @@ let args: any[] = []
 let fileName
 let execute
 let joinedArgs
+let debug: boolean
 let runtime: Runtime = "node"
-
 if (typeof Deno !== "undefined") {
 	args = Deno.args
 	runtime = "deno"
@@ -25,6 +25,7 @@ if (args.length < 1) {
 joinedArgs = args?.join(" ")
 fileName = args[0]
 runtime = joinedArgs?.includes("--deno") ? "deno" : joinedArgs.includes("--node") ? "node" : runtime
+debug = joinedArgs?.includes("--debug") ? true : false
 
 execute = joinedArgs?.includes("--exe")
 
@@ -34,7 +35,7 @@ if (joinedArgs?.includes("--dir")) {
 	console.log("")
 	for (const file of fileList) {
 		let initial = performance.now()
-		compile(file, false, "node")
+		compile(file, false, "node", debug)
 		
 		console.log(`%c✅ Compiled ${file} in ${performance.now() - initial}ms`, "color: yellow")
 	}
@@ -42,7 +43,7 @@ if (joinedArgs?.includes("--dir")) {
 	console.log("%c  TSMake  ", "color: #f0f0f0; background-color: blue;")
 	console.log("")
 	let initial = performance.now()
-	compile(fileName, execute, runtime)
+	compile(fileName, execute, runtime, debug)
 	console.log(`%c✅ Compiled ${fileName} in ${performance.now() - initial}ms`, "color: yellow")
 
 }
