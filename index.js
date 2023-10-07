@@ -1,20 +1,20 @@
-import { compile } from "./compile.ts"
-import { exit } from "./exit.ts"
-import type { Runtime } from "./types.d.ts"
-import readDir from "./utils/readDir.ts"
+import  { compile } from './compile.js'
+import  { exit } from './exit.js'
 
-let args: any[] = []
+import  readDir from './utils/readDir.js'
+
+let args = []
 let fileName
 let execute
 let joinedArgs
-let runtime: Runtime = "node"
+let runtime = "node"
 
 if (typeof Deno !== "undefined") {
 	args = Deno.args
 	runtime = "deno"
-	// @ts-ignore
+	
 } else if (typeof process !== "undefined") {
-	// @ts-ignore
+	
 	args = process.argv.splice(2, process.argv.length)
 	runtime = "node"
 }
@@ -38,11 +38,6 @@ if (joinedArgs?.includes("--dir")) {
 		console.log(`%c✅ Compiled ${file} in ${performance.now() - initial}ms`, "color: yellow")
 	}
 } else {
-	console.log("%c  TSMake  ", "color: #f0f0f0; background-color: blue;")
-	console.log("")
-	let initial = performance.now()
 	compile(fileName, execute, runtime)
-	console.log(`%c✅ Compiled ${fileName} in ${performance.now() - initial}ms`, "color: yellow")
-
 }
 

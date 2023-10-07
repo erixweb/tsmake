@@ -1,5 +1,3 @@
-function hello(msg: string) {
+export function hello(msg: string) {
     console.log(msg)
 }
-
-module.exports = hello

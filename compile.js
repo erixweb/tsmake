@@ -1,7 +1,7 @@
 
 
-import  { variables } from './keywords/variables.mjs'
-import  { isAlpha } from './utils/alpha.mjs'
+import  { variables } from './keywords/variables.js'
+import  { isAlpha } from './utils/alpha.js'
 import  { writeFileSync, readFileSync } from "node:fs"
 import  { exec } from "node:child_process"
 
@@ -9,17 +9,34 @@ import  { exec } from "node:child_process"
 export async function compile(filePath, run = false, runtime) {
 	const output = []
 	const contents = readFileSync(filePath, { encoding: "utf-8" }).split("")
-	while (contents.length > 0) {
+	let mustCompile = true
+	if (filePath.endsWith(".js")) mustCompile = false
+	while (contents.length > 0 && mustCompile) {
 		
-		if (contents[0] === '"' || contents[0] === "'") {
-			let string = ""
+		if (contents[0] === '"' || contents[0] === "'" || contents[0] === "`") {
+			let string 
+			string = ""
 			let endOfString
-			if (contents[0] === '"') endOfString = '"'
-			if (contents[0] === "'") endOfString = "'"
+			endOfString = contents[0] 
 			contents.shift()
 			while (contents[0] !== endOfString) {
 				if (contents[0] !== undefined) {
+					let current = contents[0]
 					string += contents.shift()
+					if (current === "$" && contents[0] === "{") {
+						let bracketsCount = 1
+						let jsTemplateCode = ""
+						string += contents.shift()
+						while (bracketsCount > 0) {
+							if (contents[0] === "{") {
+								bracketsCount++
+							} else if (contents[0] === "}") {
+								bracketsCount--
+							}
+							jsTemplateCode += contents.shift()
+						}
+						string += jsTemplateCode
+					}
 				} else {
 					contents.shift()
 				}
@@ -86,13 +103,11 @@ export async function compile(filePath, run = false, runtime) {
 			while (isAlpha(contents[0])) {
 				keyword += contents.shift()
 			}
-
 			if (keyword === "let" || keyword === "const") {
 				let variable = ""
-				while (contents[0] !== "=") {
+				while (contents[0] !== "=" && contents[0] !== "\n") {
 					variable += contents.shift()
 				}
-
 				output.push(variables(`${keyword}${variable}`))
 			} else if (keyword === "enum") {
 				let enums = []
@@ -173,8 +188,10 @@ export async function compile(filePath, run = false, runtime) {
 					let reverseImport = filePath.replace(".ts", ".js").split("").reverse().join("")
 					const fileIndex = reverseImport.indexOf("/")
 					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
-					compile(reverseImport + path, false, runtime)
-					let jsPath = path.substring(-1, path.length - 2) + "mjs"
+					
+					compile(reverseImport+path, false, runtime)
+					
+					let jsPath = path.substring(-1, path.length - 2) + "js"
 
 					let item
 					if (importName.indexOf('"') > -1 && importName.lastIndexOf('"') > -1) {
@@ -187,6 +204,34 @@ export async function compile(filePath, run = false, runtime) {
 				} else {
 					output.push("import " + importName)
 				}
+
+			} else if (keyword === "require") {
+				let requires 
+				let stringtype
+				while (contents[0] !== ")") {
+					requires += contents.shift()
+				}
+				if (requires.indexOf('"') !== -1) {
+					stringtype = '"'
+				} else if (requires.indexOf("'") !== -1) {
+					stringtype = "'"
+				} else {
+					stringtype = "`"
+				}
+				let path = requires.substring(
+					requires.indexOf(stringtype) + 1,
+					requires.lastIndexOf(stringtype)
+				)
+
+				if (path.endsWith(".ts")) {
+					let reverseImport = filePath.replace(".ts", ".js").split("").reverse().join("")
+					const fileIndex = reverseImport.indexOf("/")
+					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
+					compile(reverseImport + path, false, runtime)
+					path = path.substring(-1, path.length - 2) + "js"
+				}
+
+				output.push(`require("${path}"`)
 			} else if (keyword === "function") {
 				output.push(keyword)
 				while (contents[0] !== "{") {
@@ -206,17 +251,31 @@ export async function compile(filePath, run = false, runtime) {
 
 		output.push(`${contents.shift()}`)
 	}
-	writeFileSync(`${filePath.replace(".ts", ".mjs")}`, new TextEncoder().encode(output.join("")))
+	if (mustCompile) {
+		writeFileSync(
+			`debug.txt`,
+			new TextEncoder().encode(output)
+		)
+		writeFileSync(
+			`${filePath.replace(".ts", ".js")}`,
+			new TextEncoder().encode(output.join(""))
+		)
+	}
 	if (run) {
-		let jsPath = filePath.substring(filePath.lastIndexOf("."), -1) + ".mjs"
-		console.log(jsPath)
+		let jsPath = filePath.substring(filePath.lastIndexOf("."), -1) + ".js"
 		if (runtime === "deno") {
-			let cmd = new Deno.Command("deno", { args: ["run", jsPath] })
+			let cmd = new Deno.Command("deno", { args: ["run", "--allow-all", jsPath] })
 			let { code, stdout, stderr } = await cmd.output()
 			console.log(new TextDecoder().decode(stdout))
+			if (stderr) {
+				console.log(new TextDecoder().decode(stderr))
+			}
 		} else if (runtime === "node") {
 			let cmd = exec(`node ${jsPath}`, (err, stdout) => {
 				console.log(stdout)
+				if (err) {
+					console.log(err)
+				}
 			})
 		}
 	}

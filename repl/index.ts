@@ -1,6 +1,6 @@
 import { Person } from "./types.d.ts"
+import { hello } from "./say.ts"
 
-const hello = require("./say.ts")
 const erik = <Person>{
 	twitter: {
 		name: "Erik",

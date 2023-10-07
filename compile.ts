@@ -9,18 +9,34 @@ import type { Runtime } from "./types.d.ts"
 export async function compile(filePath: string, run = false, runtime: Runtime = "node") {
 	const output: string[] = []
 	const contents = readFileSync(filePath, { encoding: "utf-8" }).split("")
-	while (contents.length > 0) {
+	let mustCompile = true
+	if (filePath.endsWith(".js")) mustCompile = false
+	while (contents.length > 0 && mustCompile) {
 		// Transpiler
-		if (contents[0] === '"' || contents[0] === "'") {
+		if (contents[0] === '"' || contents[0] === "'" || contents[0] === "`") {
 			let string: string
 			string = ""
 			let endOfString
-			if (contents[0] === '"') endOfString = '"'
-			if (contents[0] === "'") endOfString = "'"
+			endOfString = contents[0] 
 			contents.shift()
 			while (contents[0] !== endOfString) {
 				if (contents[0] !== undefined) {
+					let current = contents[0]
 					string += contents.shift()
+					if (current === "$" && contents[0] === "{") {
+						let bracketsCount = 1
+						let jsTemplateCode = ""
+						string += contents.shift()
+						while (bracketsCount > 0) {
+							if (contents[0] === "{") {
+								bracketsCount++
+							} else if (contents[0] === "}") {
+								bracketsCount--
+							}
+							jsTemplateCode += contents.shift()
+						}
+						string += jsTemplateCode
+					}
 				} else {
 					contents.shift()
 				}
@@ -87,13 +103,11 @@ export async function compile(filePath: string, run = false, runtime: Runtime = 
 			while (isAlpha(contents[0])) {
 				keyword += contents.shift()
 			}
-
 			if (keyword === "let" || keyword === "const") {
 				let variable = ""
-				while (contents[0] !== "=") {
+				while (contents[0] !== "=" && contents[0] !== "\n") {
 					variable += contents.shift()
 				}
-
 				output.push(variables(`${keyword}${variable}`)!)
 			} else if (keyword === "enum") {
 				let enums = []
@@ -174,7 +188,9 @@ export async function compile(filePath: string, run = false, runtime: Runtime = 
 					let reverseImport = filePath.replace(".ts", ".js").split("").reverse().join("")
 					const fileIndex = reverseImport.indexOf("/")
 					reverseImport = reverseImport.substring(fileIndex).split("").reverse().join("")
-					compile(reverseImport + path, false, runtime)
+					// worker
+					compile(reverseImport+path, false, runtime)
+					
 					let jsPath = path.substring(-1, path.length - 2) + "js"
 
 					let item
@@ -188,22 +204,23 @@ export async function compile(filePath: string, run = false, runtime: Runtime = 
 				} else {
 					output.push("import " + importName)
 				}
+
 			} else if (keyword === "require") {
-				let require: string
-				while (contents[0] !== ")") {
-					require += contents.shift()
-				}
+				let requires
 				let stringtype
-				if (require.indexOf('"') !== -1) {
+				while (contents[0] !== ")") {
+					requires += contents.shift()
+				}
+				if (requires.indexOf('"') !== -1) {
 					stringtype = '"'
-				} else if (require.indexOf("'") !== -1) {
+				} else if (requires.indexOf("'") !== -1) {
 					stringtype = "'"
 				} else {
 					stringtype = "`"
 				}
-				let path = require.substring(
-					require.indexOf(stringtype) + 1,
-					require.lastIndexOf(stringtype)
+				let path = requires.substring(
+					requires.indexOf(stringtype) + 1,
+					requires.lastIndexOf(stringtype)
 				)
 
 				if (path.endsWith(".ts")) {
@@ -234,7 +251,16 @@ export async function compile(filePath: string, run = false, runtime: Runtime = 
 
 		output.push(`${contents.shift()}`)
 	}
-	writeFileSync(`${filePath.replace(".ts", ".js")}`, new TextEncoder().encode(output.join("")))
+	if (mustCompile) {
+		writeFileSync(
+			`debug.txt`,
+			new TextEncoder().encode(output)
+		)
+		writeFileSync(
+			`${filePath.replace(".ts", ".js")}`,
+			new TextEncoder().encode(output.join(""))
+		)
+	}
 	if (run) {
 		let jsPath = filePath.substring(filePath.lastIndexOf("."), -1) + ".js"
 		if (runtime === "deno") {
